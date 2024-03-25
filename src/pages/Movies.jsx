@@ -11,28 +11,35 @@ import MovieCards from "@components/MovieCards";
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { movies } from "@utils/api";
-import { useSearchParams } from "react-router-dom";
+import { useMovieStore } from "../store";
+// import { useSearchParams } from "react-router-dom";
 
 const Movies = () => {
   const inputRef = useRef(null);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get("q");
+  const query = useMovieStore((state) => state.query);
+  const setQuery = useMovieStore((state) => state.setQuery);
+  const page = useMovieStore((state) => state.page);
+
+  // const [searchParams, setSearchParams] = useSearchParams();
+  // const query = searchParams.get("q");
   const { isFetching, isSuccess, data } = useQuery({
-    queryKey: ["movies", query],
+    queryKey: ["movies", query, page],
     queryFn: async () => {
       const { data } = await movies.get("/search/movie", {
         params: {
           query,
+          page,
         },
       });
-      return data.results;
+      return data;
     },
     enabled: !!query,
   });
 
   const handleSearch = () => {
-    const input = inputRef.current.value;
-    setSearchParams({ q: input });
+    setQuery(inputRef.current.value);
+    // const input = inputRef.current.value;
+    // setSearchParams({ q: input });
   };
   return (
     <Container maxWidth="md">
